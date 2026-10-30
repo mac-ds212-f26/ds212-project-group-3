@@ -1,5 +1,63 @@
 ---
 title: "Proposal"
 ---
+# Title
 
-Your proposal go here.
+## Team Members: Doreen Li, Jason You, Jay Mirman
+
+
+## Project Description
+This project explores biodiversity in U.S. national parks compared with protected areas in other countries and examines their role in conserving endangered species. Using National Park Service data and the Living Planet Database, we aim to better understand how protected areas contribute to biodiversity conservation.
+
+## Research Questions
+1. How does the biodiversity of American national parks compare to other national park/conservation areas of other countries?
+2. How does American national parks play its part in conservation for endangered species?
+
+## Why We Chose This Topic?
+This topic is the interest of our group members. Also, the living planet index database is really comprehensive and we are eager to tell data stories based on it.
+
+
+## Potential Dataset
+https://www.kaggle.com/datasets/nationalparkservice/park-biodiversity?resource=download
+https://www.livingplanetindex.org/LPD_page
+
+
+## Communication Plan: 
+Our primary communication channel would be google chat, and our expected response time would be within 24 hours during the week. Given that project milestones are due on Fridays, we plan to meet before that and after we done individual task, and the time will vary, depends on that week's schedule for both of us.
+
+## Roles:
+Jay will be the point of contact. Jason will be the technical lead and Doreen will be the style lead. All of us will still contribute to the analysis, visualizations, and writing.
+
+## Conflict Resolution:
+If someone misses a deadline, we will talk as a group and adjust the tasks if needed. If the group is split on a decision, we will discuss both options and try to come up with one idea. If we still cannot decide, we will ask the instructor or preceptors for advice.
+
+## Implementation Plan:
+
+Milestone 1 Proposal + Dataset (due 10.30) *Team*
+  Jason: dataset related writing part
+  Doreen: logistics & overview part
+
+Milestone 2 Effective Teamwork (due 11.6) *Individual*
+  Each member read an article, listen to a podcast, or watch a video about effective   teamwork then summarize it in the corresponding sheet in their progress tracker.
+
+Milestone 3 Case Study (due 11.13) *Team*
+  1. Each member will read the chosen one story 
+  2. Discuss
+  3. Synthesis
+
+Milestone 4 Exploratory Data Analysis (due 11.20) *Individual*
+  Each member should perform an exploratory data analysis (EDA) on one of the   
+  project dataset and add the results into their respective Quarto file under the     eda folder of the project repository.
+
+Milestone 5 Progress Presentation (due 11.30) *Team*
+  As a team, members should present their preliminary findings to class to solicit    feedback.
+  1. Each member will in charge of telling their individual data analysis.
+
+Milestone 6 Initial Presentations (due 12.9) *Team*
+  Teams should present their (almost) complete data story to the class to solicit     feedback. Then MUST incorporate that feedback into their final submission. The      presentation should include key findings followed by explanation of the             corresponding technical details.
+
+Milestone 7 Deliverables + Evaluation (due 12.14) *Team*
+  1. Code
+  2. Data Story Report (index.qmd)
+  3. Presentation Video + Presentation Slides
+  4. Evaluation and Reflection (of themselves and team members, as well as other         groups' projects)
