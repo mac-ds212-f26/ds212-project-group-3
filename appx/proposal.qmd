@@ -1,9 +1,13 @@
 ---
 title: "Proposal"
 ---
-# Title
+# Title:
+Biodiversity in US national parks
 
-## Team Members: Doreen Li, Jason You, Jay Mirman
+## Team Members: 
+- Doreen Li 
+- Jason You
+- Jay Mirman
 
 
 ## Project Description
