@@ -2,4 +2,20 @@
 title: "Case Study"
 ---
 
-Your case study go here.
+The Physical Traits that Define Men & Women in Literature
+https://pudding.cool/2020/07/gendered-descriptions/
+
+Erin Davis starts with a book club story about a novel that describes a fairy’s appearance in great detail. This experience makes her wonder whether the differences she notices in how authors describe men and women are part of a broader pattern in literature.
+
+Before showing results, she gives readers a quiz where they guess who is being described in real passages. This is effective as it gives readers a chance to notice their own associations before exploring the data.
+
+Davis analyzed 2,000 books by using a text parser to find sentences that mentioned body parts, then identified whose body parts they were, and extracted the adjectives used to describe them. This gives readers enough context to follow the results, with more details in the methods section at the end.
+
+The first graph “Gender skew of body parts in literature” shows a silhouette of a human body with color coded circles whose size represent the frequency of each body part in description of each genders in literature. Hovering the mouse over the circles show how much more likely each part appears for either gender. The graph initially focuses on the head. After scrolling down, it zooms out to the entire body. Also, at the bottom right of the graph, there is a choice to filter data from literature from men, women or all authors. Selecting each category changes the sizes and positions of the circles on the graph.
+
+Below, there is an interactive chart that explores how writers describe the bodies of male and female characters. The readers can select among 15 body parts, including hair, lip, hands, eye, etc., and filter based on the author’s gender. The dashed 50/50 line marks the equal usage rates. Orange words on the left are more likely to describe female characters, while teal words on the right are more likely to describe male characters. The further a word is from the line, the strong the gender skew is, and the larger the word would appear. By letting readers compare these patterns across body parts, the chart shows how gender stereotypes can emerge through everyday word choices, even when writers are describing the same feature.
+
+Next the author talks about the real world significance of this analysis. The author mentions how she felt her hair was ugly, due to its resemblance to how a character’s hair was described. The author hopes that this analysis can show how people are more dimensional than simple objects, and how we should read into the nuance of characters in the books we read.
+
+Lastly the author goes more into depth on the exact process used to correlate and process the data. While they previously touched on this information, here they went far more into depth on what books they chose to analyze, how each book was processed, and the mathematical calculations used to create the variables shown in the previously mentioned graphs.
+
