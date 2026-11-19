@@ -4,3 +4,19 @@ title: "Member 2 Jason Y"
 
 Your exploratory data analysis of the team datasets go here.
 
+```{r}
+library(tidyverse)
+library(readr)
+```
+
+```{r}
+ldr <- read.csv("../data/raw/LPD_2026.1_public.csv")
+dim(ldr)
+head(ldr)
+```
+```{r}
+np <- read_csv("../data/raw/parks.csv")
+head(np)
+dim(np)
+```
+
