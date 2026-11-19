@@ -70,3 +70,4 @@ _freeze/
 *.log
 *.aux
 *.toc
+data/raw/LPD_2026.1_public.csv
