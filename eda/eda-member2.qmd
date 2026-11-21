@@ -1,5 +1,82 @@
 ---
-title: "Member 2 First Name & Last Name Initial"
+title: "Member 2 Jason Y"
 ---
 
 Your exploratory data analysis of the team datasets go here.
+
+```{r}
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+np <- read_csv("../data/raw/parks.csv")
+head(np)
+dim(np)
+```
+```{r}
+np_species <- read.csv("../data/raw/species.csv")
+head(np_species)
+dim(np_species)
+```
+
+```{r}
+np_species %>% count(Category, sort = TRUE)
+np_species %>% count(Occurrence, sort = TRUE)
+```
+
+```{r}
+np_species %>%
+  filter(Occurrence == "Present") %>%
+  distinct(Category, Scientific.Name) %>%
+  ggplot(aes(x = forcats::fct_infreq(Category))) +
+  geom_bar(fill = "darkseagreen4") +
+  coord_flip() +
+  labs(title = "Recorded Species by Category",
+       x = "Category",
+       y = "Number of unique scientific names")
+```
+
+
+```{r}
+np_species %>%
+  filter(Occurrence == "Present") %>%
+  group_by(Park.Name) %>%
+  summarise(species_count = n_distinct(Scientific.Name)) %>%
+  slice_max(species_count, n = 10, with_ties = FALSE) %>%
+  ggplot(aes(x = reorder(Park.Name, species_count),
+             y = species_count)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Top 10 Parks by Recorded Species Richness",
+       x = NULL,
+       y = "Number of unique scientific names")
+```
+```{r}
+np %>%
+  ggplot(aes(x = Acres)) +
+  geom_histogram(bins = 15, fill = "darkseagreen4",
+                 color = "white") +
+  scale_x_log10() +
+  labs(title = "Distribution of Park Area",
+       x = "Area in acres (log scale)",
+       y = "Number of parks")
+```
+
+```{r}
+np_species %>%
+  filter(Occurrence == "Present") %>%
+  group_by(Park.Name) %>%
+  summarise(species_count = n_distinct(Scientific.Name)) %>%
+  left_join(np, by = c("Park.Name" = "Park Name")) %>%
+  ggplot(aes(x = Acres, y = species_count)) +
+  geom_point(color = "steelblue", size = 2) +
+  scale_x_log10() +
+  labs(title = "Park Area and Recorded Species Richness",
+       x = "Area in acres (log scale)",
+       y = "Number of unique scientific names")
+```
+
