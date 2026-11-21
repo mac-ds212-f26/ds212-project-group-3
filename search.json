@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Biodiversity in US National Parks",
     "section": "",
-    "text": "Your report goes here.\n\n\nCode\n# a test code chunk",
+    "text": "Your report goes here.\n\nCode# a test code chunk",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Report</span>"
     ]
@@ -12,23 +12,111 @@
   {
     "objectID": "eda/eda-member1.html",
     "href": "eda/eda-member1.html",
-    "title": "Member 1 First Name & Last Name Initial",
+    "title": "Doreen Li",
     "section": "",
-    "text": "Your exploratory data analysis of the team datasets go here.",
+    "text": "r setup\nCode# load the libraries\nlibrary(tidyverse)\nlibrary(maps)\nlibrary(ggplot2)\nlibrary(sf) # Tools for working with spatial vector data\nlibrary(leaflet)",
     "crumbs": [
       "EDA",
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Member 1 First Name & Last Name Initial</span>"
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
+    ]
+  },
+  {
+    "objectID": "eda/eda-member1.html#load-data",
+    "href": "eda/eda-member1.html#load-data",
+    "title": "Doreen Li",
+    "section": "load data",
+    "text": "load data\n\nCodeparks &lt;- read_csv(\"../data/raw/parks.csv\")\nhead(parks)\n\n# A tibble: 6 × 6\n  `Park Code` `Park Name`                        State  Acres Latitude Longitude\n  &lt;chr&gt;       &lt;chr&gt;                              &lt;chr&gt;  &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;\n1 ACAD        Acadia National Park               ME     47390     44.4     -68.2\n2 ARCH        Arches National Park               UT     76519     38.7    -110. \n3 BADL        Badlands National Park             SD    242756     43.8    -102. \n4 BIBE        Big Bend National Park             TX    801163     29.2    -103. \n5 BISC        Biscayne National Park             FL    172924     25.6     -80.1\n6 BLCA        Black Canyon of the Gunnison Nati… CO     32950     38.6    -108. \n\nCodedim(parks)\n\n[1] 56  6\n\nCodespecies &lt;- read.csv(\"../data/raw/species.csv\")\nhead(species)\n\n  Species.ID            Park.Name Category        Order   Family\n1  ACAD-1000 Acadia National Park   Mammal Artiodactyla Cervidae\n2  ACAD-1001 Acadia National Park   Mammal Artiodactyla Cervidae\n3  ACAD-1002 Acadia National Park   Mammal    Carnivora  Canidae\n4  ACAD-1003 Acadia National Park   Mammal    Carnivora  Canidae\n5  ACAD-1004 Acadia National Park   Mammal    Carnivora  Canidae\n6  ACAD-1005 Acadia National Park   Mammal    Carnivora  Felidae\n         Scientific.Name\n1            Alces alces\n2 Odocoileus virginianus\n3          Canis latrans\n4            Canis lupus\n5          Vulpes vulpes\n6        Lynx canadensis\n                                                     Common.Names Record.Status\n1                                                           Moose      Approved\n2    Northern White-Tailed Deer, Virginia Deer, White-Tailed Deer      Approved\n3                                          Coyote, Eastern Coyote      Approved\n4                     Eastern Timber Wolf, Gray Wolf, Timber Wolf      Approved\n5 Black Fox, Cross Fox, Eastern Red Fox, Fox, Red Fox, Silver Fox      Approved\n6                                                     Canada Lynx      Approved\n     Occurrence Nativeness Abundance Seasonality Conservation.Status X\n1       Present     Native      Rare    Resident                      \n2       Present     Native  Abundant                                  \n3       Present Not Native    Common              Species of Concern  \n4 Not Confirmed     Native                                Endangered  \n5       Present    Unknown    Common     Breeder                      \n6 Not Confirmed     Native                                            \n\nCodedim(species)\n\n[1] 119248     14\n\nCode# change column names to snake_case: \"Park Name\" -&gt; park_name\nclean_nm &lt;- function(x) tolower(gsub(\"^_|_$\", \"\", gsub(\"[^A-Za-z0-9]+\", \"_\", x)))\nnames(parks)   &lt;- clean_nm(names(parks))\nnames(species) &lt;- clean_nm(names(species))\n\nglimpse(parks)\n\nRows: 56\nColumns: 6\n$ park_code &lt;chr&gt; \"ACAD\", \"ARCH\", \"BADL\", \"BIBE\", \"BISC\", \"BLCA\", \"BRCA\", \"CAN…\n$ park_name &lt;chr&gt; \"Acadia National Park\", \"Arches National Park\", \"Badlands Na…\n$ state     &lt;chr&gt; \"ME\", \"UT\", \"SD\", \"TX\", \"FL\", \"CO\", \"UT\", \"UT\", \"UT\", \"NM\", …\n$ acres     &lt;dbl&gt; 47390, 76519, 242756, 801163, 172924, 32950, 35835, 337598, …\n$ latitude  &lt;dbl&gt; 44.35, 38.68, 43.75, 29.25, 25.65, 38.57, 37.57, 38.20, 38.2…\n$ longitude &lt;dbl&gt; -68.21, -109.57, -102.50, -103.25, -80.08, -107.72, -112.18,…\n\nCodeglimpse(species)\n\nRows: 119,248\nColumns: 14\n$ species_id          &lt;chr&gt; \"ACAD-1000\", \"ACAD-1001\", \"ACAD-1002\", \"ACAD-1003\"…\n$ park_name           &lt;chr&gt; \"Acadia National Park\", \"Acadia National Park\", \"A…\n$ category            &lt;chr&gt; \"Mammal\", \"Mammal\", \"Mammal\", \"Mammal\", \"Mammal\", …\n$ order               &lt;chr&gt; \"Artiodactyla\", \"Artiodactyla\", \"Carnivora\", \"Carn…\n$ family              &lt;chr&gt; \"Cervidae\", \"Cervidae\", \"Canidae\", \"Canidae\", \"Can…\n$ scientific_name     &lt;chr&gt; \"Alces alces\", \"Odocoileus virginianus\", \"Canis la…\n$ common_names        &lt;chr&gt; \"Moose\", \"Northern White-Tailed Deer, Virginia Dee…\n$ record_status       &lt;chr&gt; \"Approved\", \"Approved\", \"Approved\", \"Approved\", \"A…\n$ occurrence          &lt;chr&gt; \"Present\", \"Present\", \"Present\", \"Not Confirmed\", …\n$ nativeness          &lt;chr&gt; \"Native\", \"Native\", \"Not Native\", \"Native\", \"Unkno…\n$ abundance           &lt;chr&gt; \"Rare\", \"Abundant\", \"Common\", \"\", \"Common\", \"\", \"\"…\n$ seasonality         &lt;chr&gt; \"Resident\", \"\", \"\", \"\", \"Breeder\", \"\", \"Vagrant\", …\n$ conservation_status &lt;chr&gt; \"\", \"\", \"Species of Concern\", \"Endangered\", \"\", \"\"…\n$ x                   &lt;chr&gt; \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\"…",
+    "crumbs": [
+      "EDA",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
+    ]
+  },
+  {
+    "objectID": "eda/eda-member1.html#data-cleaning",
+    "href": "eda/eda-member1.html#data-cleaning",
+    "title": "Doreen Li",
+    "section": "Data cleaning",
+    "text": "Data cleaning\n\nCodespecies &lt;- species |&gt;\n  select(where(~ !all(is.na(.x)))) |&gt;                                 # drop columns that are entirely empty\n  mutate(across(where(is.character), ~ na_if(str_trim(.x), \"\"))) |&gt;   # trim whitespace; blank strings -&gt; NA\n  distinct() |&gt;                                                       # remove duplicate rows\n  filter(occurrence == \"Present\" | is.na(occurrence))                 # keep records where the species is present\n\n# Blank Conservation Status values stay as NA (not recoded to \"Not Listed\")\ncat(\"Conservation Status NA:\", sum(is.na(species$conservation_status)),\n    sprintf(\"(%.1f%%)\\n\", 100 * mean(is.na(species$conservation_status))))\n\nConservation Status NA: 99539 (96.2%)\n\nCodespecies |&gt; count(conservation_status, sort = TRUE)\n\n  conservation_status     n\n1                &lt;NA&gt; 99539\n2  Species of Concern  3259\n3          Endangered   229\n4        Under Review   157\n5          Threatened   147\n6         In Recovery    69\n7 Proposed Endangered    17\n8 Proposed Threatened     3\n\nCode# Group non-missing statuses into broader categories (NA stays NA)\nspecies &lt;- species |&gt;\n  mutate(\n    status_group = case_when(\n      is.na(conservation_status)                                  ~ NA_character_,\n      str_detect(str_to_lower(conservation_status), \"extinct\")    ~ \"Extinct\",\n      str_detect(str_to_lower(conservation_status), \"endangered\") ~ \"Endangered\",\n      str_detect(str_to_lower(conservation_status), \"threatened\") ~ \"Threatened\",\n      str_detect(str_to_lower(conservation_status), \"recovery\")   ~ \"In Recovery\",\n      str_detect(str_to_lower(conservation_status), \"concern\")    ~ \"Species of Concern\",\n      TRUE                                                        ~ \"Other / Under Review\"\n    ),\n    has_status = !is.na(conservation_status)   # TRUE if the species has any conservation status\n  )\n\n# Check: do all park names in species appear in parks?\nspecies |&gt; distinct(park_name) |&gt; anti_join(parks, by = \"park_name\")\n\n[1] park_name\n&lt;0 rows&gt; (or 0-length row.names)\n\nCode# One row per park: richness and conservation-status counts\npark_stats &lt;- species |&gt;\n  group_by(park_name) |&gt;\n  summarise(\n    n_species     = n_distinct(scientific_name),\n    n_with_status = n_distinct(scientific_name[has_status]),\n    n_endangered  = n_distinct(scientific_name[status_group %in% \"Endangered\"]),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(pct_with_status = 100 * n_with_status / n_species) |&gt;\n  left_join(parks, by = \"park_name\") |&gt;\n  mutate(species_per_1000_acres = n_species / (acres / 1000))",
+    "crumbs": [
+      "EDA",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
+    ]
+  },
+  {
+    "objectID": "eda/eda-member1.html#viz-3--park-area-vs.-species-richness",
+    "href": "eda/eda-member1.html#viz-3--park-area-vs.-species-richness",
+    "title": "Doreen Li",
+    "section": "Viz 3- Park area vs. species richness",
+    "text": "Viz 3- Park area vs. species richness\n\nCodepark_stats |&gt;\n  filter(!is.na(acres)) |&gt;\n  ggplot(aes(acres, n_species)) +\n  geom_point(alpha = .8, color = \"#2a7f62\", size = 2.5) +\n  geom_smooth(method = \"lm\", se = FALSE, color = \"grey40\", linewidth = .6) +\n  scale_x_log10(labels = scales::comma) + scale_y_log10() +\n  labs(title = \"Species richness vs. park size\", x = \"Area (acres, log)\", y = \"Species (log)\")",
+    "crumbs": [
+      "EDA",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
+    ]
+  },
+  {
+    "objectID": "eda/eda-member1.html#viz-4--distribution-of-conservation-status-exclude-na",
+    "href": "eda/eda-member1.html#viz-4--distribution-of-conservation-status-exclude-na",
+    "title": "Doreen Li",
+    "section": "Viz 4- Distribution of conservation status (exclude NA)",
+    "text": "Viz 4- Distribution of conservation status (exclude NA)\n\nCodespecies |&gt;\n  filter(!is.na(status_group)) |&gt;\n  count(status_group) |&gt;\n  ggplot(aes(x = n, y = reorder(status_group, n))) +\n  geom_col(fill = \"#c0562b\") +\n  labs(title = \"Records by conservation status (NA excluded)\",\n       subtitle = sprintf(\"%.1f%% of records have a status\", 100 * mean(species$has_status)),\n       x = \"Records\", y = NULL)",
+    "crumbs": [
+      "EDA",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
+    ]
+  },
+  {
+    "objectID": "eda/eda-member1.html#viz-5--share-of-records-with-a-conservation-status-by-taxonomic-category",
+    "href": "eda/eda-member1.html#viz-5--share-of-records-with-a-conservation-status-by-taxonomic-category",
+    "title": "Doreen Li",
+    "section": "Viz 5- Share of records with a conservation status, by taxonomic category",
+    "text": "Viz 5- Share of records with a conservation status, by taxonomic category\n\nCodespecies |&gt;\n  group_by(category) |&gt;\n  summarise(pct = 100 * mean(has_status), .groups = \"drop\") |&gt;\n  ggplot(aes(x = pct, y = reorder(category, pct))) +\n  geom_col(fill = \"#6a5acd\") +\n  labs(title = \"Conservation status coverage by category\",\n       x = \"% of records with a status\", y = NULL)",
+    "crumbs": [
+      "EDA",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
+    ]
+  },
+  {
+    "objectID": "eda/eda-member1.html#viz-6--status-in-the-10-parks-with-the-most-listed-species",
+    "href": "eda/eda-member1.html#viz-6--status-in-the-10-parks-with-the-most-listed-species",
+    "title": "Doreen Li",
+    "section": "Viz 6- Status in the 10 parks with the most listed species",
+    "text": "Viz 6- Status in the 10 parks with the most listed species\n\nCodetop10 &lt;- park_stats |&gt; slice_max(n_with_status, n = 10) |&gt; pull(park_name)\nspecies |&gt;\n  filter(park_name %in% top10, !is.na(status_group)) |&gt;\n  count(park_name, status_group) |&gt;\n  ggplot(aes(x = n, y = reorder(park_name, n, sum), fill = status_group)) +\n  geom_col() +\n  scale_fill_brewer(palette = \"Set2\") +\n  labs(title = \"Conservation status in top 10 parks by listed species\",\n       x = \"Records\", y = NULL, fill = \"Status\")",
+    "crumbs": [
+      "EDA",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
+    ]
+  },
+  {
+    "objectID": "eda/eda-member1.html#viz-7---species-richness-by-park-in-the-u.s.",
+    "href": "eda/eda-member1.html#viz-7---species-richness-by-park-in-the-u.s.",
+    "title": "Doreen Li",
+    "section": "Viz 7 - Species richness by park in the U.S.",
+    "text": "Viz 7 - Species richness by park in the U.S.\n\nCode# convert parks to sf point data (longitude/latitude, CRS 4326)\npark_sf &lt;- park_stats |&gt;\n  filter(!is.na(latitude), !is.na(longitude)) |&gt;\n  st_as_sf(coords = c(\"longitude\", \"latitude\"), crs = 4326, remove = FALSE)\n\n#state boundaries as the base map (from the maps package)\nus_states_sf &lt;- st_as_sf(maps::map(\"state\", plot = FALSE, fill = TRUE))\nif (is.na(st_crs(us_states_sf))) us_states_sf &lt;- st_set_crs(us_states_sf, 4326)   # set CRS if missing\nus_states_sf &lt;- st_transform(us_states_sf, crs = st_crs(park_sf))                 # match the parks' CRS\n\n# static maps cover the lower 48 states only; Alaska/Hawaii parks appear in the leaflet map (4.3)\nlower48_x &lt;- c(-125, -66)\nlower48_y &lt;- c(24, 50)\n\n#viz 7\nggplot() +\n  geom_sf(data = us_states_sf, fill = \"white\", color = \"grey60\") +\n  geom_sf(data = park_sf, aes(size = n_species, color = n_species), alpha = .8) +\n  scale_color_viridis_c(guide = \"legend\") +\n  coord_sf(xlim = lower48_x, ylim = lower48_y) +\n  labs(title = \"Species richness across U.S. national parks\",\n       color = \"Species\", size = \"Species\") +\n  theme_void() +\n  theme(legend.position = \"bottom\")",
+    "crumbs": [
+      "EDA",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
+    ]
+  },
+  {
+    "objectID": "eda/eda-member1.html#viz-8--interactive-map-includes-alaska-and-hawaii",
+    "href": "eda/eda-member1.html#viz-8--interactive-map-includes-alaska-and-hawaii",
+    "title": "Doreen Li",
+    "section": "Viz 8- interactive map (includes Alaska and Hawaii)",
+    "text": "Viz 8- interactive map (includes Alaska and Hawaii)\n\nCodepal &lt;- colorNumeric(\"viridis\", domain = park_sf$n_species)   # color palette for species richness\n\nleaflet(park_sf) |&gt;\n  addProviderTiles(\"OpenStreetMap.Mapnik\") |&gt;\n  addCircleMarkers(\n    lng = ~longitude, lat = ~latitude,\n    radius = ~sqrt(n_species) / 3,                            # circle size scales with richness\n    color = ~pal(n_species), fillOpacity = 0.8, stroke = FALSE,\n    popup = ~paste0(\"&lt;b&gt;\", park_name, \"&lt;/b&gt;&lt;br&gt;\",             # click a circle to see details\n                    \"Species: \", n_species, \"&lt;br&gt;\",\n                    \"With status: \", n_with_status,\n                    \" (\", round(pct_with_status, 1), \"%)\")\n  ) |&gt;\n  addLegend(pal = pal, values = ~n_species, title = \"Species\")",
+    "crumbs": [
+      "EDA",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Doreen Li</span>"
     ]
   },
   {
     "objectID": "eda/eda-member2.html",
     "href": "eda/eda-member2.html",
-    "title": "Member 2 First Name & Last Name Initial",
+    "title": "Member 2 Jason Y",
     "section": "",
-    "text": "Your exploratory data analysis of the team datasets go here.",
+    "text": "Your exploratory data analysis of the team datasets go here.\n\nCodelibrary(tidyverse)\nlibrary(readr)\nlibrary(dplyr)\nlibrary(ggplot2)\n\n\n\nCodenp &lt;- read_csv(\"../data/raw/parks.csv\")\nhead(np)\n\n# A tibble: 6 × 6\n  `Park Code` `Park Name`                        State  Acres Latitude Longitude\n  &lt;chr&gt;       &lt;chr&gt;                              &lt;chr&gt;  &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;\n1 ACAD        Acadia National Park               ME     47390     44.4     -68.2\n2 ARCH        Arches National Park               UT     76519     38.7    -110. \n3 BADL        Badlands National Park             SD    242756     43.8    -102. \n4 BIBE        Big Bend National Park             TX    801163     29.2    -103. \n5 BISC        Biscayne National Park             FL    172924     25.6     -80.1\n6 BLCA        Black Canyon of the Gunnison Nati… CO     32950     38.6    -108. \n\nCodedim(np)\n\n[1] 56  6\n\n\n\nCodenp_species &lt;- read.csv(\"../data/raw/species.csv\")\nhead(np_species)\n\n  Species.ID            Park.Name Category        Order   Family\n1  ACAD-1000 Acadia National Park   Mammal Artiodactyla Cervidae\n2  ACAD-1001 Acadia National Park   Mammal Artiodactyla Cervidae\n3  ACAD-1002 Acadia National Park   Mammal    Carnivora  Canidae\n4  ACAD-1003 Acadia National Park   Mammal    Carnivora  Canidae\n5  ACAD-1004 Acadia National Park   Mammal    Carnivora  Canidae\n6  ACAD-1005 Acadia National Park   Mammal    Carnivora  Felidae\n         Scientific.Name\n1            Alces alces\n2 Odocoileus virginianus\n3          Canis latrans\n4            Canis lupus\n5          Vulpes vulpes\n6        Lynx canadensis\n                                                     Common.Names Record.Status\n1                                                           Moose      Approved\n2    Northern White-Tailed Deer, Virginia Deer, White-Tailed Deer      Approved\n3                                          Coyote, Eastern Coyote      Approved\n4                     Eastern Timber Wolf, Gray Wolf, Timber Wolf      Approved\n5 Black Fox, Cross Fox, Eastern Red Fox, Fox, Red Fox, Silver Fox      Approved\n6                                                     Canada Lynx      Approved\n     Occurrence Nativeness Abundance Seasonality Conservation.Status X\n1       Present     Native      Rare    Resident                      \n2       Present     Native  Abundant                                  \n3       Present Not Native    Common              Species of Concern  \n4 Not Confirmed     Native                                Endangered  \n5       Present    Unknown    Common     Breeder                      \n6 Not Confirmed     Native                                            \n\nCodedim(np_species)\n\n[1] 119248     14\n\n\n\nCodenp_species %&gt;% count(Category, sort = TRUE)\n\n              Category     n\n1       Vascular Plant 65221\n2                 Bird 14601\n3               Insect 14349\n4                Fungi  6203\n5    Nonvascular Plant  4278\n6                 Fish  3956\n7               Mammal  3867\n8         Invertebrate  1566\n9              Reptile  1343\n10               Algae   976\n11          Slug/Snail   787\n12     Spider/Scorpion   776\n13           Amphibian   743\n14 Crab/Lobster/Shrimp   582\n\nCodenp_species %&gt;% count(Occurrence, sort = TRUE)\n\n                       Occurrence     n\n1                         Present 83278\n2                                 20142\n3                   Not Confirmed 11958\n4      Not Present (False Report)  2072\n5 Not Present (Historical Report)  1310\n6                     Not Present   431\n7                        Approved    51\n8                       In Review     6\n\n\n\nCodenp_species %&gt;%\n  filter(Occurrence == \"Present\") %&gt;%\n  distinct(Category, Scientific.Name) %&gt;%\n  ggplot(aes(x = forcats::fct_infreq(Category))) +\n  geom_bar(fill = \"darkseagreen4\") +\n  coord_flip() +\n  labs(title = \"Recorded Species by Category\",\n       x = \"Category\",\n       y = \"Number of unique scientific names\")\n\n\n\n\n\n\n\n\nCodenp_species %&gt;%\n  filter(Occurrence == \"Present\") %&gt;%\n  group_by(Park.Name) %&gt;%\n  summarise(species_count = n_distinct(Scientific.Name)) %&gt;%\n  slice_max(species_count, n = 10, with_ties = FALSE) %&gt;%\n  ggplot(aes(x = reorder(Park.Name, species_count),\n             y = species_count)) +\n  geom_bar(stat = \"identity\", fill = \"steelblue\") +\n  coord_flip() +\n  labs(title = \"Top 10 Parks by Recorded Species Richness\",\n       x = NULL,\n       y = \"Number of unique scientific names\")\n\n\n\n\n\n\n\n\nCodenp %&gt;%\n  ggplot(aes(x = Acres)) +\n  geom_histogram(bins = 15, fill = \"darkseagreen4\",\n                 color = \"white\") +\n  scale_x_log10() +\n  labs(title = \"Distribution of Park Area\",\n       x = \"Area in acres (log scale)\",\n       y = \"Number of parks\")\n\n\n\n\n\n\n\n\nCodenp_species %&gt;%\n  filter(Occurrence == \"Present\") %&gt;%\n  group_by(Park.Name) %&gt;%\n  summarise(species_count = n_distinct(Scientific.Name)) %&gt;%\n  left_join(np, by = c(\"Park.Name\" = \"Park Name\")) %&gt;%\n  ggplot(aes(x = Acres, y = species_count)) +\n  geom_point(color = \"steelblue\", size = 2) +\n  scale_x_log10() +\n  labs(title = \"Park Area and Recorded Species Richness\",\n       x = \"Area in acres (log scale)\",\n       y = \"Number of unique scientific names\")",
     "crumbs": [
       "EDA",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Member 2 First Name & Last Name Initial</span>"
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Member 2 Jason Y</span>"
     ]
   },
   {
