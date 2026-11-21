@@ -1,0 +1,190 @@
+---
+title: "Doreen Li"
+---
+## r setup
+```{r}
+# load the libraries
+library(tidyverse)
+library(maps)
+library(ggplot2)
+library(sf) # Tools for working with spatial vector data
+library(leaflet)
+```
+
+## load data
+```{r}
+parks <- read_csv("../data/raw/parks.csv")
+head(parks)
+dim(parks)
+
+species <- read.csv("../data/raw/species.csv")
+head(species)
+dim(species)
+
+# change column names to snake_case: "Park Name" -> park_name
+clean_nm <- function(x) tolower(gsub("^_|_$", "", gsub("[^A-Za-z0-9]+", "_", x)))
+names(parks)   <- clean_nm(names(parks))
+names(species) <- clean_nm(names(species))
+
+glimpse(parks)
+glimpse(species)
+```
+
+## Data cleaning
+```{r}
+species <- species |>
+  select(where(~ !all(is.na(.x)))) |>                                 # drop columns that are entirely empty
+  mutate(across(where(is.character), ~ na_if(str_trim(.x), ""))) |>   # trim whitespace; blank strings -> NA
+  distinct() |>                                                       # remove duplicate rows
+  filter(occurrence == "Present" | is.na(occurrence))                 # keep records where the species is present
+
+# Blank Conservation Status values stay as NA (not recoded to "Not Listed")
+cat("Conservation Status NA:", sum(is.na(species$conservation_status)),
+    sprintf("(%.1f%%)\n", 100 * mean(is.na(species$conservation_status))))
+species |> count(conservation_status, sort = TRUE)
+
+# Group non-missing statuses into broader categories (NA stays NA)
+species <- species |>
+  mutate(
+    status_group = case_when(
+      is.na(conservation_status)                                  ~ NA_character_,
+      str_detect(str_to_lower(conservation_status), "extinct")    ~ "Extinct",
+      str_detect(str_to_lower(conservation_status), "endangered") ~ "Endangered",
+      str_detect(str_to_lower(conservation_status), "threatened") ~ "Threatened",
+      str_detect(str_to_lower(conservation_status), "recovery")   ~ "In Recovery",
+      str_detect(str_to_lower(conservation_status), "concern")    ~ "Species of Concern",
+      TRUE                                                        ~ "Other / Under Review"
+    ),
+    has_status = !is.na(conservation_status)   # TRUE if the species has any conservation status
+  )
+
+# Check: do all park names in species appear in parks?
+species |> distinct(park_name) |> anti_join(parks, by = "park_name")
+
+# One row per park: richness and conservation-status counts
+park_stats <- species |>
+  group_by(park_name) |>
+  summarise(
+    n_species     = n_distinct(scientific_name),
+    n_with_status = n_distinct(scientific_name[has_status]),
+    n_endangered  = n_distinct(scientific_name[status_group %in% "Endangered"]),
+    .groups = "drop"
+  ) |>
+  mutate(pct_with_status = 100 * n_with_status / n_species) |>
+  left_join(parks, by = "park_name") |>
+  mutate(species_per_1000_acres = n_species / (acres / 1000))
+```
+
+# Viz 1- Distribution of species richness across U.S. National Parks
+```{r}
+ggplot(park_stats, aes(n_species)) +
+  geom_histogram(bins = 20, fill = "#2a7f62", color = "white") +
+  scale_x_log10() +
+  labs(title = "Species richness across U.S. National Parks (log scale)",
+       x = "Distinct species", y = "Number of parks") +
+  theme_classic()
+```
+
+# Viz 2- Top 15 parks by species richness
+```{r}
+park_stats |>
+  slice_max(n_species, n = 15) |>
+  ggplot(aes(x = n_species, y = reorder(park_name, n_species))) +
+  geom_col(fill = "#2a7f62") +
+  labs(title = "Top 15 parks by species richness", x = "Distinct species", y = NULL)
+```
+
+## Viz 3- Park area vs. species richness
+```{r}
+park_stats |>
+  filter(!is.na(acres)) |>
+  ggplot(aes(acres, n_species)) +
+  geom_point(alpha = .8, color = "#2a7f62", size = 2.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "grey40", linewidth = .6) +
+  scale_x_log10(labels = scales::comma) + scale_y_log10() +
+  labs(title = "Species richness vs. park size", x = "Area (acres, log)", y = "Species (log)")
+```
+
+## Viz 4- Distribution of conservation status (exclude NA)
+```{r}
+species |>
+  filter(!is.na(status_group)) |>
+  count(status_group) |>
+  ggplot(aes(x = n, y = reorder(status_group, n))) +
+  geom_col(fill = "#c0562b") +
+  labs(title = "Records by conservation status (NA excluded)",
+       subtitle = sprintf("%.1f%% of records have a status", 100 * mean(species$has_status)),
+       x = "Records", y = NULL)
+```
+
+## Viz 5- Share of records with a conservation status, by taxonomic category
+```{r}
+species |>
+  group_by(category) |>
+  summarise(pct = 100 * mean(has_status), .groups = "drop") |>
+  ggplot(aes(x = pct, y = reorder(category, pct))) +
+  geom_col(fill = "#6a5acd") +
+  labs(title = "Conservation status coverage by category",
+       x = "% of records with a status", y = NULL)
+```
+
+## Viz 6- Status in the 10 parks with the most listed species
+```{r}
+top10 <- park_stats |> slice_max(n_with_status, n = 10) |> pull(park_name)
+species |>
+  filter(park_name %in% top10, !is.na(status_group)) |>
+  count(park_name, status_group) |>
+  ggplot(aes(x = n, y = reorder(park_name, n, sum), fill = status_group)) +
+  geom_col() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "Conservation status in top 10 parks by listed species",
+       x = "Records", y = NULL, fill = "Status")
+```
+
+## Viz 7 - Species richness by park in the U.S.
+```{r}
+# convert parks to sf point data (longitude/latitude, CRS 4326)
+park_sf <- park_stats |>
+  filter(!is.na(latitude), !is.na(longitude)) |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326, remove = FALSE)
+
+#state boundaries as the base map (from the maps package)
+us_states_sf <- st_as_sf(maps::map("state", plot = FALSE, fill = TRUE))
+if (is.na(st_crs(us_states_sf))) us_states_sf <- st_set_crs(us_states_sf, 4326)   # set CRS if missing
+us_states_sf <- st_transform(us_states_sf, crs = st_crs(park_sf))                 # match the parks' CRS
+
+# static maps cover the lower 48 states only; Alaska/Hawaii parks appear in the leaflet map (4.3)
+lower48_x <- c(-125, -66)
+lower48_y <- c(24, 50)
+
+#viz 7
+ggplot() +
+  geom_sf(data = us_states_sf, fill = "white", color = "grey60") +
+  geom_sf(data = park_sf, aes(size = n_species, color = n_species), alpha = .8) +
+  scale_color_viridis_c(guide = "legend") +
+  coord_sf(xlim = lower48_x, ylim = lower48_y) +
+  labs(title = "Species richness across U.S. national parks",
+       color = "Species", size = "Species") +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+
+## Viz 8- interactive map (includes Alaska and Hawaii)
+```{r}
+pal <- colorNumeric("viridis", domain = park_sf$n_species)   # color palette for species richness
+
+leaflet(park_sf) |>
+  addProviderTiles("OpenStreetMap.Mapnik") |>
+  addCircleMarkers(
+    lng = ~longitude, lat = ~latitude,
+    radius = ~sqrt(n_species) / 3,                            # circle size scales with richness
+    color = ~pal(n_species), fillOpacity = 0.8, stroke = FALSE,
+    popup = ~paste0("<b>", park_name, "</b><br>",             # click a circle to see details
+                    "Species: ", n_species, "<br>",
+                    "With status: ", n_with_status,
+                    " (", round(pct_with_status, 1), "%)")
+  ) |>
+  addLegend(pal = pal, values = ~n_species, title = "Species")
+```
+
+
