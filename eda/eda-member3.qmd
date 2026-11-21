@@ -1,5 +1,68 @@
 ---
-title: "Member 3 First Name & Last Name Initial"
+title: "Jay M"
 ---
 
 Your exploratory data analysis of the team datasets go here.
+
+```{r}
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+np <- read_csv("../data/raw/parks.csv")
+np_species <- read.csv("../data/raw/species.csv")
+```
+
+
+
+```{r}
+np_species %>%
+  filter(!is.na(Family), Family != "") %>%
+  distinct(Family, Scientific.Name) %>%
+  count(Family, sort = TRUE) %>%
+  slice_max(n, n = 15) %>%
+  ggplot(aes(x = forcats::fct_reorder(Family, n), y = n)) +
+  geom_col(fill = "#00008B", width = 0.7) +
+  geom_text(aes(label = n), hjust = -0.3, size = 3.5, color = "#34483A") +
+  coord_flip() +
+  labs(
+    title = "The Most Diverse Species Families",
+    x = NULL,
+    y = "Number of Unique Species",
+  ) +
+  theme_minimal()
+```
+```{r}
+np_species %>%
+    filter(!is.na(Occurrence), Occurrence != "") %>%
+  count(Occurrence, sort = TRUE) %>%
+  ggplot(aes(x = forcats::fct_reorder(Occurrence, n), y = n)) +
+  geom_col(fill = "#00008B") +
+  coord_flip() +
+  labs(
+    title = "Species Occurrence Status",
+    x = "Occurrence Status",
+    y = "Number of Records"
+  ) +
+  theme_minimal()
+```
+```{r}
+np_species %>%
+    filter(!is.na(Abundance), Abundance != "") %>%
+  count(Abundance, sort = TRUE) %>%
+  ggplot(aes(x = forcats::fct_reorder(Abundance, n), y = n)) +
+  geom_col(fill = "#00008B") +
+  coord_flip() +
+  labs(
+    title = "Species Abundance",
+    x = "Abundance",
+    y = "Number of Records"
+  ) +
+  theme_minimal()
+```
+
+

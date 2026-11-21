@@ -71,3 +71,5 @@ _freeze/
 *.aux
 *.toc
 data/raw/LPD_2026.1_public.csv
+data/raw/LPD_metadata_2026.pdf
+data/raw/LPI_data_Use_Policy_2026.pdf
